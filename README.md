@@ -104,6 +104,151 @@ Education_Stats = {
     'range': [6.0, 29.0]
 }
 ```
+### Demographics Module Implementation
+```python
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+def load_uds_data():
+    """Load required UDS form data"""
+    base_path = "/Users/robynan/Desktop/OASIS3_data_files/scans/"
+    
+    return {
+        'demographics': pd.read_csv(f"{base_path}demo-demographics/resources/csv/files/OASIS3_demographics.csv"),
+        'family_history': pd.read_csv(f"{base_path}UDSa3-Form_A3__Subject_Family_History/resources/csv/files/OASIS3_UDSa3.csv"),
+        'physical': pd.read_csv(f"{base_path}UDSb1-Form_B1__Evaluation_Form_Physical/resources/csv/files/OASIS3_UDSb1_physical_eval.csv"),
+        'cdr': pd.read_csv(f"{base_path}UDSb4-Form_B4__Global_Staging__CDR__Standard_and_Supplemental/resources/csv/files/OASIS3_UDSb4_cdr.csv"),
+        'diagnoses': pd.read_csv(f"{base_path}UDSd1-Form_D1__Clinician_Diagnosis___Cognitive_Status_and_Dementia/resources/csv/files/OASIS3_UDSd1_diagnoses.csv")
+    }
+
+def map_handedness(hand_value):
+    """Map handedness codes to descriptive text"""
+    if pd.isna(hand_value):
+        return 'Unknown'
+    mapping = {
+        1: 'Right',
+        2: 'Left',
+        3: 'Ambidextrous'
+    }
+    return mapping.get(hand_value, 'Unknown')
+
+def calculate_family_history(demo_row):
+    """Calculate family history based on parental dementia status"""
+    if pd.notna(demo_row.get('daddem')) and demo_row['daddem'] == 1:
+        return 'Yes (Paternal)'
+    elif pd.notna(demo_row.get('momdem')) and demo_row['momdem'] == 1:
+        return 'Yes (Maternal)'
+    return 'No'
+
+def determine_diagnosis_status(cdr_row, diagnoses_row):
+    """Determine diagnosis using CDR and clinical diagnosis data"""
+    if not diagnoses_row.empty and 'DXCURREN' in diagnoses_row:
+        dx = diagnoses_row['DXCURREN']
+        if dx == 1:
+            return 'Normal'
+        elif dx == 2:
+            return 'MCI'
+        elif dx in [3, 4]:
+            return 'AD'
+    
+    if not cdr_row.empty and 'CDRGLOB' in cdr_row:
+        cdr = cdr_row['CDRGLOB']
+        if cdr == 0:
+            return 'Normal'
+        elif cdr == 0.5:
+            return 'MCI'
+        elif cdr >= 1:
+            return 'AD'
+    
+    return 'Unknown'
+
+def process_demographics():
+    """Main function to process demographics data"""
+    print("Loading UDS data...")
+    data_sources = load_uds_data()
+    
+    # Create ID mapping from existing neuroimaging data
+    existing_data = pd.read_excel("/Users/robynan/Desktop/raw_data.xlsx", 
+                                sheet_name="Neuroimaging Data")
+    id_mapping = {f"OAS3{int(mrn.replace('MRN', '')):04d}": mrn 
+                 for mrn in existing_data['Participant_ID']}
+    
+    demographics_data = []
+    print("Processing participant data...")
+    
+    for oasis_id, mrn_id in id_mapping.items():
+        # Extract participant data from each source
+        demo_data = data_sources['demographics'][
+            data_sources['demographics']['OASISID'] == oasis_id
+        ].iloc[0] if not data_sources['demographics'][
+            data_sources['demographics']['OASISID'] == oasis_id
+        ].empty else pd.Series()
+        
+        cdr_data = data_sources['cdr'][
+            data_sources['cdr']['OASISID'] == oasis_id
+        ].iloc[0] if not data_sources['cdr'][
+            data_sources['cdr']['OASISID'] == oasis_id
+        ].empty else pd.Series()
+        
+        diagnoses_data = data_sources['diagnoses'][
+            data_sources['diagnoses']['OASISID'] == oasis_id
+        ].iloc[0] if not data_sources['diagnoses'][
+            data_sources['diagnoses']['OASISID'] == oasis_id
+        ].empty else pd.Series()
+        
+        # Count follow-up visits
+        follow_ups = len(data_sources['cdr'][
+            data_sources['cdr']['OASISID'] == oasis_id
+        ])
+        
+        # Compile demographic record
+        demographics_data.append({
+            'Participant_ID': mrn_id,
+            'Age': demo_data.get('AgeatEntry'),
+            'Sex': 'Female' if demo_data.get('GENDER') == 2 else 'Male' 
+                   if demo_data.get('GENDER') == 1 else 'Unknown',
+            'Education_Years': demo_data.get('EDUC'),
+            'Handedness': map_handedness(demo_data.get('HAND')),
+            'Diagnosis_Status': determine_diagnosis_status(cdr_data, diagnoses_data),
+            'Study_Date': datetime.now().strftime('%Y-%m-%d'),
+            'Follow_Up_Number': follow_ups,
+            'Family_History_AD': calculate_family_history(demo_data),
+            'APOE_Status': 'ε' + str(demo_data.get('APOE')) 
+                          if pd.notna(demo_data.get('APOE')) else 'Not Available'
+        })
+    
+    # Create and save final dataframe
+    demographics_df = pd.DataFrame(demographics_data)
+    demographics_df = demographics_df.sort_values('Participant_ID')
+    
+    print("Saving demographics data...")
+    with pd.ExcelWriter("/Users/robynan/Desktop/raw_data.xlsx", 
+                       mode='a', if_sheet_exists='replace') as writer:
+        demographics_df.to_excel(writer, 
+                               sheet_name='Participant Demographics', 
+                               index=False)
+    
+    return demographics_df
+
+# Execute processing
+if __name__ == "__main__":
+    demographics_df = process_demographics()
+    
+    # Print summary statistics
+    print("\nDemographics Summary:")
+    print(f"Total participants: {len(demographics_df)}")
+    print("\nDiagnosis distribution:")
+    print(demographics_df['Diagnosis_Status'].value_counts())
+    print("\nFamily History distribution:")
+    print(demographics_df['Family_History_AD'].value_counts())
+    print("\nAge statistics:")
+    print(demographics_df['Age'].describe())
+    print("\nSex distribution:")
+    print(demographics_df['Sex'].value_counts())
+    print("\nEducation years statistics:")
+    print(demographics_df['Education_Years'].describe())
+```
 
 ## Statistical Methods
 ### Primary Analyses
