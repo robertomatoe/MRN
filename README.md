@@ -1727,3 +1727,323 @@ This enhanced toolkit adds:
 - Publication-ready figures
 - Statistical summaries
 - Clinical implications
+
+# Metacognitive Resilience Network (MRN) Data Dictionary
+
+## Core Variables
+
+### Network Metrics
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Network_Integration | Float | Score | 0-100 | Primary measure of neural network connectivity and integration. Higher scores indicate better network function |
+| Overall_Resilience | Float | Score | 0-68.21 | Composite measure of cognitive resilience across multiple domains |
+| MRN_Score | Float | Score | 0-76.08 | Overall Metacognitive Resilience Network functioning score |
+
+### Memory Components
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Memory_Component | Float | Score | 0.03-80.04 | Composite score of memory function |
+| Memory_Recall_Score | Float | Score | 0-100 | Performance on memory recall tasks |
+| Working_Memory_Score | Float | Score | 0-100 | Working memory task performance |
+| Pattern_Recognition_Score | Float | Score | 0-100 | Visual pattern recognition performance |
+
+### Clinical Measures
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Clinical_Status | Integer | Score | 0-100 | Overall clinical assessment score |
+| MMSE_Score | Integer | Score | 0-30 | Mini-Mental State Examination score |
+| CDR_Global | Float | Score | 0-3 | Clinical Dementia Rating global score |
+| CDR_Sum_of_Boxes | Float | Score | 0-18 | Sum of CDR domain scores |
+
+### Cognitive Assessments
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Trail_Making_A | Integer | Seconds | 0-300 | Time to complete Trail Making Test A |
+| Trail_Making_B | Integer | Seconds | 0-300 | Time to complete Trail Making Test B |
+| Digit_Forward | Integer | Score | 0-16 | Forward digit span score |
+| Digit_Backward | Integer | Score | 0-14 | Backward digit span score |
+| Animal_Naming | Integer | Count | 0-40 | Number of animals named in 60 seconds |
+| Vegetable_Naming | Integer | Count | 0-40 | Number of vegetables named in 60 seconds |
+
+### Brain Volume Metrics
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Hippocampus_Volume_Left | Float | cm³ | - | Left hippocampal volume |
+| Hippocampus_Volume_Right | Float | cm³ | - | Right hippocampal volume |
+| Total_Hippocampus_Volume | Float | cm³ | - | Total hippocampal volume |
+| Hippocampus_Volume_Normalized | Float | % of ICV | 0-100 | Normalized hippocampal volume |
+
+### Network Performance
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Memory_Network_Score | Float | Score | 0-100 | Memory network functioning score |
+| Executive_Network_Score | Float | Score | 0-100 | Executive function network score |
+| Metacognitive_Network_Score | Float | Score | 0-100 | Metacognitive network performance |
+
+### Resilience Indicators
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Hippocampus_Resilience_Score | Float | Score | 0-100 | Hippocampal resilience metric |
+| PFC_Resilience_Score | Float | Score | 0-100 | Prefrontal cortex resilience score |
+| Network_Connectivity_Score | Float | Score | 0-100 | Overall network connectivity metric |
+
+### Demographic Information
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Age | Float | Years | 42.5-95.6 | Participant age |
+| Education_Years | Integer | Years | 0-20 | Years of formal education |
+| Education_Years_Encoded | Integer | Category | 1-4 | Encoded education level |
+
+## Derived Metrics
+
+### Compensation Indices
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Compensation_Index | Float | Score | 0-100 | Overall compensation capability |
+| Memory_Compensation | Float | Score | 0-100 | Memory-specific compensation |
+| Executive_Compensation | Float | Score | 0-100 | Executive function compensation |
+
+### Clinical Outcomes
+| Variable | Type | Units | Range | Description |
+|----------|------|-------|--------|-------------|
+| Error_Monitoring | Float | Score | 0-100 | Error detection and monitoring ability |
+| Metacognitive_Performance | Float | Score | 0-100 | Overall metacognitive functioning |
+| JOL_Predicted_Score | Float | Score | 0-100 | Judgment of Learning prediction accuracy |
+
+## Quality Metrics
+
+### Data Quality Indicators
+| Variable | Description | Threshold |
+|----------|-------------|-----------|
+| Missing Data Rate | Percentage of missing values per variable | <5% acceptable |
+| Outlier Rate | Percentage of outliers (>3 SD from mean) | <1% acceptable |
+| Test-Retest Reliability | ICC for repeated measures | >0.80 required |
+
+### Validation Metrics
+| Metric | Description | Target Range |
+|--------|-------------|--------------|
+| Internal Consistency | Cronbach's alpha for composite scores | >0.80 |
+| Convergent Validity | Correlation with related measures | >0.60 |
+| Discriminant Validity | Correlation with unrelated measures | <0.30 |
+
+## Notes
+- All scores are standardized unless otherwise specified
+- Normalized volumes are presented as percentages of total intracranial volume (ICV)
+- Higher scores indicate better performance unless otherwise noted
+- Missing values are coded as NA
+- Outliers are defined as values >3 standard deviations from the mean
+
+# MRN Technical Appendix 
+
+## 1. Core Metric Calculations
+
+### Network Integration Score
+```
+NI = Σ(wi * ci) / n
+
+where:
+- wi = weight of connection i
+- ci = strength of connection i
+- n = total number of connections
+
+Normalized to 0-100 scale:
+NI_normalized = ((NI - NI_min) / (NI_max - NI_min)) * 100
+```
+
+### MRN Score Computation
+```
+MRN_Score = (0.6939 * Network_Integration) + 
+            (0.2845 * Overall_Resilience) + 
+            (0.0174 * Clinical_Status) + 
+            (0.0042 * Memory_Component)
+
+Confidence Interval = MRN_Score ± (1.96 * SE)
+where SE = σ/√n
+```
+
+### Compensation Effect
+```
+CE = r(high_NI) - r(low_NI)
+
+where:
+- r(high_NI) = correlation coefficient for high Network Integration group
+- r(low_NI) = correlation coefficient for low Network Integration group
+
+Effect Size = CE / √((1/(n1-3) + 1/(n2-3)))
+```
+
+## 2. Volume Normalizations
+
+### Hippocampal Volume Normalization
+```
+HV_norm = (HV_raw / ICV) * 100
+
+where:
+- HV_raw = raw hippocampal volume in cm³
+- ICV = total intracranial volume in cm³
+```
+
+### Network Volume Metrics
+```
+Regional_Contribution = (Regional_Volume / Network_Volume) * 100
+Network_Asymmetry = |Left_Volume - Right_Volume| / (Left_Volume + Right_Volume)
+```
+
+## 3. Cognitive Scores
+
+### Composite Memory Score
+```
+Memory_Component = w1*Recall + w2*Working + w3*Recognition
+
+where:
+w1 = 0.4 (Recall weight)
+w2 = 0.3 (Working memory weight)
+w3 = 0.3 (Recognition weight)
+
+Z-score standardization:
+Z = (x - μ) / σ
+```
+
+### Executive Function Score
+```
+EF_Score = Σ(Zi * wi)
+
+where:
+Zi = standardized score for test i
+wi = weight for test i
+
+Components:
+- Trail Making B/A ratio
+- Digit Span (Forward-Backward difference)
+- Verbal fluency composite
+```
+
+## 4. Quality Metrics
+
+### Reliability Measures
+```
+Test-Retest Reliability (ICC):
+ICC = σ²_between / (σ²_between + σ²_within)
+
+Internal Consistency:
+Cronbach's α = (k/(k-1)) * (1 - Σσ²_i/σ²_total)
+where k = number of items
+```
+
+### Data Quality Indices
+```
+Missing Data Rate = (missing_values / total_values) * 100
+
+Outlier Score = |x - median| / MAD
+where MAD = median absolute deviation
+
+Signal-to-Noise Ratio = μ_signal / σ_noise
+```
+
+## 5. Statistical Validations
+
+### Threshold Detection
+```
+Critical_Threshold = μ ± (2 * σ)
+where σ = rolling standard deviation
+
+Change Detection:
+Δ = |xt - xt-1| / xt-1
+Significant if Δ > 2 * σ_baseline
+```
+
+### Model Validation
+```
+Cross-Validation Score:
+CV_score = (1/k) * Σ(R²_i)
+where k = number of folds
+
+Prediction Error:
+RMSE = √(Σ(y_pred - y_true)² / n)
+```
+
+## 6. Usage Guidelines
+
+### Data Collection Standards
+1. Temporal Requirements
+   - Baseline: Complete all assessments within 14 days
+   - Follow-up: ±7 days from scheduled date
+   - Time-of-day consistency: ±2 hours
+
+2. Quality Control Thresholds
+   ```
+   Acceptable ranges:
+   - Missing data: <5% per variable
+   - Outliers: <1% of total data
+   - Test-retest variability: <10%
+   ```
+
+3. Measurement Standards
+   ```
+   Volume measurements:
+   - Resolution: 1mm³ isotropic
+   - Motion parameters: <1mm translation, <1° rotation
+   - SNR threshold: >20:1
+   ```
+
+### Implementation Protocol
+
+1. Data Preprocessing
+   ```python
+   def preprocess_pipeline(data):
+       # Remove outliers
+       z_scores = np.abs(stats.zscore(data))
+       data_clean = data[z_scores < 3]
+       
+       # Normalize
+       scaler = StandardScaler()
+       data_normalized = scaler.fit_transform(data_clean)
+       
+       return data_normalized
+   ```
+
+2. Quality Checks
+   ```python
+   def quality_check(data):
+       qc_metrics = {
+           'missing_rate': data.isnull().sum() / len(data),
+           'outlier_rate': (np.abs(stats.zscore(data)) > 3).sum() / len(data),
+           'reliability': compute_reliability(data)
+       }
+       return qc_metrics
+   ```
+
+3. Score Computation
+   ```python
+   def compute_mrn_score(data):
+       weights = {
+           'network_integration': 0.6939,
+           'overall_resilience': 0.2845,
+           'clinical_status': 0.0174,
+           'memory_component': 0.0042
+       }
+       
+       mrn_score = sum(data[k] * v for k, v in weights.items())
+       return mrn_score
+   ```
+
+### Reporting Standards
+
+1. Required Metrics
+   ```
+   Minimum reporting requirements:
+   - Sample size and demographics
+   - Quality metrics (all above)
+   - Model performance metrics
+   - Confidence intervals
+   - Effect sizes
+   ```
+
+2. Validation Requirements
+   ```
+   Required validations:
+   - Cross-validation results
+   - Test-retest reliability
+   - Internal consistency
+   - Convergent validity
+   ```
